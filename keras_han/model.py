@@ -12,7 +12,7 @@ class HAN(Model):
             self, max_words, max_sentences, output_size,
             embedding_matrix, word_encoding_dim=200,
             sentence_encoding_dim=200, inputs=None,
-            outputs=None, name='han-for-docla'
+            outputs=None, make_emebedding_trainable=False,name='han-for-docla'
     ):
         """
         A Keras implementation of Hierarchical Attention networks
@@ -34,7 +34,7 @@ class HAN(Model):
         self.embedding_matrix = embedding_matrix
         self.word_encoding_dim = word_encoding_dim
         self.sentence_encoding_dim = sentence_encoding_dim
-
+        self.trainabale_embedding_layer = make_emebedding_trainable
 
         in_tensor, out_tensor = self._build_network()
 
@@ -42,7 +42,7 @@ class HAN(Model):
             inputs=in_tensor, outputs=out_tensor, name=name
         )
 
-    def build_word_encoder(self, max_words, embedding_matrix, encoding_dim=200):
+    def build_word_encoder(self, max_words, embedding_matrix, make_emebedding_trainable,encoding_dim=200):
         """
         Build the model that embeds and encodes in context the
         words used in a sentence. The return model takes a tensor of shape
@@ -64,7 +64,7 @@ class HAN(Model):
         embedding_layer = Embedding(
             vocabulary_size, embedding_dim,
             weights=[embedding_matrix], input_length=max_words,
-            trainable=False
+            trainable=make_emebedding_trainable
         )
 
         sentence_input = Input(shape=(max_words,), dtype='int32')
@@ -110,7 +110,7 @@ class HAN(Model):
         in_tensor = Input(shape=(self.max_sentences, self.max_words))
 
         word_encoder = self.build_word_encoder(
-            self.max_words, self.embedding_matrix, self.word_encoding_dim
+            self.max_words, self.embedding_matrix, self.trainabale_embedding_layer,self.word_encoding_dim
         )
 
         word_rep = TimeDistributed(
